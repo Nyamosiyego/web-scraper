@@ -1,0 +1,46 @@
+name: CHAN Scraper SMS
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes (UTC)
+  workflow_dispatch: {}       # manual run button
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # OPTIONAL: cache state so "ALWAYS_SEND=false" can detect changes across runs
+      - name: Restore change-detection state
+        uses: actions/cache@v4
+        with:
+          path: .state
+          key: chan-state
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run scraper
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
+          TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
+          TARGET_URL: "https://chan.mookh.com/event/chan-2024-finals/"
+          ALWAYS_SEND: "true"              # set to "false" to only text on change
+          SMS_SEGMENT_LIMIT: "1400"
+        run: python main.py

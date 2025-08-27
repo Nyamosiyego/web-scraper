@@ -1,0 +1,18 @@
+[project]
+name = "web-scraper"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Edmond",email = "edmond.nyamosi@strathmore.edu"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "twilio (>=9.7.1,<10.0.0)",
+    "playwright (>=1.54.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

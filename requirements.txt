@@ -1,0 +1,2 @@
+playwright==1.47.0
+twilio==9.2.3
