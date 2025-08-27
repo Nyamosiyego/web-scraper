@@ -36,11 +36,12 @@ jobs:
 
       - name: Run scraper
         env:
-          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
-          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
-          TWILIO_FROM_NUMBER: ${{ secrets.TWILIO_FROM_NUMBER }}
-          TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
-          TARGET_URL: "https://chan.mookh.com/event/chan-2024-finals/"
-          ALWAYS_SEND: "true"              # set to "false" to only text on change
-          SMS_SEGMENT_LIMIT: "1400"
+            TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+            TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+            TWILIO_WHATSAPP_FROM: ${{ secrets.TWILIO_WHATSAPP_FROM }}
+            TWILIO_TO_NUMBER: ${{ secrets.TWILIO_TO_NUMBER }}
+            TARGET_URL: "https://chan.mookh.com/event/chan-2024-finals/"
+            ALWAYS_SEND: "true"
+            SMS_SEGMENT_LIMIT: "1400"
+            SMS_MAX_PARTS: "6"
         run: python main.py
