@@ -1,8 +1,8 @@
 name: CHAN Scraper SMS
 
 on:
-  schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes (UTC)
+#   schedule:
+    # - cron: "*/30 * * * *"   # every 30 minutes (UTC)
   workflow_dispatch: {}       # manual run button
 
 jobs:

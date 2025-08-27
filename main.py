@@ -5,6 +5,9 @@ import json
 import pathlib
 from twilio.rest import Client
 from playwright.sync_api import sync_playwright
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TARGET_URL = os.environ.get(
     "TARGET_URL", "https://chan.mookh.com/event/chan-2024-finals/"
