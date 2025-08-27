@@ -10,13 +10,13 @@ TARGET_URL = os.environ.get(
     "TARGET_URL", "https://chan.mookh.com/event/chan-2024-finals/"
 )
 TO_NUMBER = os.environ["TWILIO_TO_NUMBER"]
-FROM_NUMBER = os.environ["TWILIO_FROM_NUMBER"]
 TWILIO_SID = os.environ["TWILIO_ACCOUNT_SID"]
 TWILIO_TOKEN = os.environ["TWILIO_AUTH_TOKEN"]
 TWILIO_WHATSAPP_FROM = os.environ["TWILIO_WHATSAPP_FROM"]
 
 ALWAYS_SEND = os.environ.get("ALWAYS_SEND", "true").lower() in {"1", "true", "yes"}
 MAX_SEGMENT = int(os.environ.get("SMS_SEGMENT_LIMIT", "1400"))
+MAX_PARTS = int(os.environ.get("SMS_MAX_PARTS", "6"))
 
 
 def send_whatsapp(client: Client, text: str, header_prefix: str = ""):
@@ -24,13 +24,26 @@ def send_whatsapp(client: Client, text: str, header_prefix: str = ""):
         text, width=MAX_SEGMENT, break_long_words=False, replace_whitespace=False
     )
     total = len(parts)
+    clipped = False
+    if total > MAX_PARTS:
+        parts = parts[:MAX_PARTS]
+        clipped = True
+        total = len(parts)
+
     for i, chunk in enumerate(parts, start=1):
         prefix = f"{header_prefix} (Part {i}/{total}) " if total > 1 else header_prefix
         body = f"{prefix}{chunk}".strip()
         client.messages.create(
             to="whatsapp:" + TO_NUMBER,
-            from_="whatsapp:" + os.environ["TWILIO_WHATSAPP_FROM"],  # NEW env var
+            from_="whatsapp:" + TWILIO_WHATSAPP_FROM,
             body=body,
+        )
+
+    if clipped:
+        client.messages.create(
+            to="whatsapp:" + TO_NUMBER,
+            from_="whatsapp:" + TWILIO_WHATSAPP_FROM,
+            body="[Truncated: additional content omitted. Increase SMS_MAX_PARTS to receive more.]",
         )
 
 
@@ -43,17 +56,20 @@ def scrape_text(url: str) -> str:
                 "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
             )
         )
-        page = context.new_page()
-        page.goto(url, wait_until="networkidle", timeout=90_000)
-        page.wait_for_timeout(3000)
-        visible_text = page.evaluate("() => document.body.innerText")
-        visible_text = "\n".join(
-            line.strip() for line in visible_text.splitlines() if line.strip()
-        )
-        if not visible_text or len(visible_text) < 50:
-            visible_text = page.content()
-        browser.close()
-        return visible_text
+        try:
+            page = context.new_page()
+            page.goto(url, wait_until="networkidle", timeout=90_000)
+            page.wait_for_timeout(3000)
+            visible_text = page.evaluate("() => document.body.innerText")
+            visible_text = "\n".join(
+                line.strip() for line in visible_text.splitlines() if line.strip()
+            )
+            if not visible_text or len(visible_text) < 50:
+                visible_text = page.content()
+            return visible_text
+        finally:
+            context.close()
+            browser.close()
 
 
 def main():
@@ -76,7 +92,6 @@ def main():
     if old.get("digest") != digest:
         send_whatsapp(sms_client, page_text, header_prefix="CHAN Finals page changed:")
         state_path.write_text(json.dumps({"digest": digest}))
-    # else: no change → no SMS
 
 
 if __name__ == "__main__":
