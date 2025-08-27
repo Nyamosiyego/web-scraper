@@ -35,14 +35,14 @@ def send_whatsapp(client: Client, text: str, header_prefix: str = ""):
         body = f"{prefix}{chunk}".strip()
         client.messages.create(
             to="whatsapp:" + TO_NUMBER,
-            from_="whatsapp:" + TWILIO_WHATSAPP_FROM,
+            from_=TWILIO_WHATSAPP_FROM,
             body=body,
         )
 
     if clipped:
         client.messages.create(
             to="whatsapp:" + TO_NUMBER,
-            from_="whatsapp:" + TWILIO_WHATSAPP_FROM,
+            from_=TWILIO_WHATSAPP_FROM,
             body="[Truncated: additional content omitted. Increase SMS_MAX_PARTS to receive more.]",
         )
 
