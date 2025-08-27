@@ -32,7 +32,7 @@ jobs:
         run: |
           pip install uv
           uv pip install --system -r requirements.txt
-          python -m playwright install --with-deps chromium
+          python -m playwright install chromium
 
       - name: Run scraper
         env:
